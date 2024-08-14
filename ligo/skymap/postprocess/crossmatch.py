@@ -210,7 +210,13 @@ targets."""
 
 
 def crossmatch(
-    sky_map, coordinates=None, contours=(), areas=(), modes=False, cosmology=False
+    sky_map,
+    coordinates=None,
+    contours=(),
+    areas=(),
+    modes=False,
+    cosmology=False,
+    cosmo=None,
 ):
     """Cross match a sky map with a catalog of points.
 
@@ -253,6 +259,11 @@ def crossmatch(
         If True, then search space by descending probability density per unit
         comoving volume. If False, then search space by descending probability
         per luminosity distance cubed.
+
+    cosmo : :class:`astropy.cosmology.Cosmology`, optional
+        TC: Cosmology to use for cosmological calculations (passed to the
+        `postprocess.cosmology` module).  If `None`, the default of `Planck15`
+        is used, as in the original `ligo.skymap`.
 
     Returns
     -------
@@ -459,7 +470,7 @@ def crossmatch(
         # Calculate probability density per unit volume.
 
         if cosmology:
-            dV *= dVC_dVL_for_DL(r)
+            dV *= dVC_dVL_for_DL(r, cosmo=cosmo)
         dP_dV = dP / dV
         i = np.flipud(np.argsort(dP_dV.ravel()))
 
