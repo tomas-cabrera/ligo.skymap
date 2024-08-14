@@ -20,12 +20,20 @@ All functions in this module use the Planck15 cosmological parameters.
 """
 
 import numpy as np
-from astropy.cosmology import Planck15 as cosmo, z_at_value
+from astropy.cosmology import Planck15 as default_cosmo, z_at_value
 import astropy.units as u
 
 
-def dDL_dz_for_z(z):
+def set_cosmo(cosmo):
+    """TC: Set the cosmology to be used by the functions in this module."""
+    if cosmo is None:
+        cosmo = default_cosmo
+    return cosmo
+
+
+def dDL_dz_for_z(z, cosmo=None):
     """Derivative of luminosity distance with respect to redshift."""
+    cosmo = set_cosmo(cosmo)
     Ok0 = cosmo.Ok0
     DH = cosmo.hubble_distance
     DC_by_DH = (cosmo.comoving_distance(z) / DH).value
@@ -40,7 +48,7 @@ def dDL_dz_for_z(z):
     return ret
 
 
-def dVC_dVL_for_z(z):
+def dVC_dVL_for_z(z, cosmo=None):
     r"""Ratio, :math:`\mathrm{d}V_C / \mathrm{d}V_L`, between the comoving
     volume element and a naively Euclidean volume element in luminosity
     distance space; given as a function of redshift.
@@ -58,6 +66,7 @@ def dVC_dVL_for_z(z):
        {D_L}^2 \frac{\mathrm{d}D_L}{\mathrm{d}z}
        \right)^{-1}.
     """
+    cosmo = set_cosmo(cosmo)
     Ok0 = cosmo.Ok0
     DH = cosmo.hubble_distance
     DM_by_DH = (cosmo.comoving_transverse_distance(z) / DH).value
@@ -76,14 +85,16 @@ def dVC_dVL_for_z(z):
 
 
 @np.vectorize
-def z_for_DL(DL):
+def z_for_DL(DL, cosmo=None):
     """Redshift as a function of luminosity distance in Mpc."""
+    cosmo = set_cosmo(cosmo)
     return z_at_value(cosmo.luminosity_distance, DL * u.Mpc).to_value(
-        u.dimensionless_unscaled)
+        u.dimensionless_unscaled
+    )
 
 
-def dVC_dVL_for_DL(DL):
+def dVC_dVL_for_DL(DL, cosmo=None):
     """Same as :meth:`dVC_dVL_for_z`, but as a function of luminosity
     distance.
     """
-    return dVC_dVL_for_z(z_for_DL(DL))
+    return dVC_dVL_for_z(z_for_DL(DL, cosmo=cosmo), cosmo=cosmo)
