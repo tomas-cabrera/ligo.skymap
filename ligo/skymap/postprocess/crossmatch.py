@@ -218,6 +218,7 @@ def crossmatch(
     modes=False,
     cosmology=False,
     cosmo=None,
+    volume_integrand=None,
 ):
     """Cross match a sky map with a catalog of points.
 
@@ -265,6 +266,15 @@ def crossmatch(
         TC: Cosmology to use for cosmological calculations (passed to the
         `postprocess.cosmology` module).  If `None`, the default of `Planck15`
         is used, as in the original `ligo.skymap`.
+
+    volume_integrand : :class:`callable`, optional
+        TC: Function to integrate over the sky map.  If `None`, then the integrand
+        is the volume element, s.t. the resulting integral is the volume contained
+        in the specified contours.  If not `None`, then the integrand is integrated
+        over the contour volumes and returned as the `contour_vols` attribute of
+        the `CrossmatchResult`, in order to preserve compatibility.  The integrand
+        should be a function that yields a density dn/dV_C as a function of dL
+        and cosmo.  `cosmology` must be `True` for this to be used.
 
     Returns
     -------
@@ -471,6 +481,14 @@ def crossmatch(
             dV *= dVC_dVL_for_DL(r, cosmo=cosmo)
         dP_dV = dP / dV
         i = np.flipud(np.argsort(dP_dV.ravel()))
+
+        # TC: calculate integrand
+        if volume_integrand is not None:
+            if not cosmology:
+                raise ValueError(
+                    "Argument volume_integrand can only be used with cosmology=True"
+                )
+            dV *= volume_integrand(r, cosmo=cosmo)
 
         P_flat = np.cumsum(dP.ravel()[i])
         V_flat = np.cumsum(dV.ravel()[i])
