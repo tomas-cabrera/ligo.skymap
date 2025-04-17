@@ -81,6 +81,9 @@ def parser():
                         help='The name of the table to search for recursively '
                         'within the HDF5 file. By default, search for '
                         'posterior_samples')
+    parser.add_argument("--enable-dpgmm", default=False, action=EnableAction,
+                        help='Use a DPGMM instead of KDE '
+                        'for density esimation.')
     return parser
 
 
@@ -100,6 +103,19 @@ def main(args=None):
         import sys
         import pickle
         from ..kde import Clustered2Plus1DSkyKDE, Clustered2DSkyKDE
+        if args.enable_dpgmm:
+            if args.enable_distance_map:
+                raise NotImplementedError('--enable-distance-map is not yet'
+                                          'supported with --enable-dpgmm')
+            else:
+                from ..dpgmm import SkyDPGMM
+                cls = SkyDPGMM
+        else:
+            if args.enable_distance_map:
+                cls = Clustered2Plus1DSkyKDE
+            else:
+                cls = Clustered2DSkyKDE
+
         import logging
         from textwrap import wrap
 
@@ -141,10 +157,7 @@ def main(args=None):
                 pts = np.column_stack((data['ra'], data['dec']))
             else:
                 pts = np.column_stack((data['ra'], data['dec'], dist))
-            if args.enable_distance_map:
-                cls = Clustered2Plus1DSkyKDE
-            else:
-                cls = Clustered2DSkyKDE
+
             skypost = cls(pts, trials=args.trials, jobs=args.jobs)
 
             log.info('pickling')

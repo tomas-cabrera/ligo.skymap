@@ -87,6 +87,9 @@ You are now ready to get started using `ligo.skymap`.
 
           The following packages are optional for specific features.
 
+          For using DPGMM density estimation:
+          *  `FIGARO <https://figaro.readthedocs.io>` ≥ 1.7.8
+
           For running the test suite:
 
           *  `astroquery <https://astroquery.readthedocs.io/>`_

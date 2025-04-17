@@ -51,11 +51,20 @@ def samples_without_distance(samples, tmpdir):
     return filename
 
 
-def test_from_samples(samples, tmpdir):
+@pytest.mark.parametrize("enable_dpgmm", [False, True])
+def test_from_samples(samples, tmpdir, enable_dpgmm):
+    pytest.importorskip('figaro')
     """Test ligo-skymap-from-samples."""
-    run_entry_point('ligo-skymap-from-samples', '--seed', '150914',
-                    samples, '-o', str(tmpdir),
-                    '--instruments', 'H1', 'L1', 'V1', '--objid', 'S1234')
+    args = ['ligo-skymap-from-samples', '--seed', '150914',
+            samples, '-o', str(tmpdir),
+            '--instruments', 'H1', 'L1', 'V1',
+            '--objid', 'S1234']
+
+    if enable_dpgmm:
+        args.append('--enable-dpgmm')
+        args.append('--disable-distance-map')
+
+    run_entry_point(*args)
     table = Table.read(str(tmpdir / 'skymap.fits'), format='fits')
     assert table.meta['OBJECT'] == 'S1234'
     assert table.meta['INSTRUME'] == 'H1,L1,V1'
