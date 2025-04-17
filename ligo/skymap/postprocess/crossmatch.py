@@ -452,11 +452,10 @@ def crossmatch(
             contour_dists = []
         else:
             lo, hi = interp_greedy_credible_levels(
-                np.vstack((0.5 * (1 - contours), 0.5 * (1 + contours))),
-                P_r,
-                r,
-                right=np.inf,
-            )
+                np.vstack((
+                    0.5 * (1 - contours),
+                    0.5 * (1 + contours)
+                )), P_r, r, right=np.inf)
             contour_dists = (hi - lo).tolist()
 
         # Calculate volume of each voxel, defined as the region within the
