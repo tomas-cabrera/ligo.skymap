@@ -456,6 +456,7 @@ def crossmatch(
                     0.5 * (1 - contours),
                     0.5 * (1 + contours)
                 )), P_r, r, right=np.inf)
+            contour_dists = (hi - lo).tolist()
 
         # Calculate volume of each voxel, defined as the region within the
         # HEALPix pixel and contained within the two centric spherical shells
